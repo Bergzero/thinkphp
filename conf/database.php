@@ -8,19 +8,19 @@
         // 服务器地址
         'hostname'        => '127.0.0.1',
         // 数据库名
-        'database'        => '',
+        'database'        => 'course',
         // 数据库用户名
-        'username'        => Env::get('database_username'),
+        'username'        => 'root',
         // 数据库密码
-        'password'        => Env::get('database_password'),
+        'password'        => '',
         // 数据库连接端口
-        'hostport'        => '',
+        'hostport'        => '3306',
         // 数据库连接参数
         'params'          => [],
         // 数据库编码默认采用utf8
         'charset'         => 'utf8',
         // 数据库表前缀
-        'prefix'          => '',
+        'prefix'          => '',//为每个数据表添加前缀
         // 数据库调试模式
         'debug'           => false,
         // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)

@@ -1,0 +1,100 @@
+thinkphp
+
+模块设计
+common controller Index.php Index index 公共目录 不能直接访问
+admin  controller Index.php Index index可以调用common模块，能直接被访问
+index  controller Index.php Index index可以调用common模块，能直接被访问
+
+惯例配置：配置
+//定义配置文件目录
+define('CONF_PATH', __DIR__ . '/../application/conf/');
+同时在app下新建一个conf文件
+
+应用配置
+在conf创建的config.php可以覆盖admin/index/index中的Index类中index方法中的config()函数调用
+其默认配置信息是保存在thinkphp目录下的convention.php文件
+
+扩展配置：在conf目录下新建一个目录，其目录名称为数组的名字，里面为二层数组，且其优先级高于
+conf下的config.php文件
+
+场景配置：在conf目录下的config.php中使用'app_status'数组，分别指示home或者office进行场景转化
+，home.php与office.php也同样保存在conf目录下
+
+模块配置：分别在conf下建立index文件和admin文件，在各自的文件下设置的config.php分别对应于各自在
+app模块下的admin和index下的模块
+
+动态配置:指的是如何在一个controller中使用函数具有不同的配置，要使得配置在类中有效，可以在index
+模块下的index.php的方法中使用构造函数，在构造函数中使用config('before','beforeconfiguration'),
+也可以在Index类中使用的函数中使用不同的配置，这就实现了类中的动态效果
+
+config类和config函数
+config类在thinkphp/library/think/config.php
+config函数在thinkphp/helper 一般建议写类
+use \think\Config;
+//获取配置
+			//$con = \think\Config::get();
+			//$con = config();
+			//$res = Config::get('app_namespace');
+			//$res = config('app_namespace');
+			//$res = Config::set('username','aa');
+			//config('username','aa');
+			//config('username','aa','index');
+			
+			//$res = Config::has('username');
+			//$res = config('?username');
+			//dump($res);
+			
+环境变量的配置和使用
+use think\Env;
+Env::get('database_username','root');
+通过在conf目录下的config.php中使用环境变量，通过环境变量的切换使得
+用户可以切换不同的配置，而只需要更改.env上的值。
+
+入口文件
+thinkphp  单入口文件
+应用程序的所有http请求都由某一些文件接收并由这个文件转发到功能代码上
+优势：安全检测 请求过滤
+
+thinkphp/public/index.php 入口文件
+入口文件常量定义 thinkphp\thnkphp\base.php
+如果入口文件没有定义，base.php中会有自动设置好的常量
+在php中框架引导文件中有安全过滤，可以在index中设置常量与引导文件
+
+入口文件隐藏
+都是由经过app/public/.htaccess的
+
+入口文件绑定
+1 在app/public/index.php 
+//绑定模块
+//define('BIND_MODULE','admin/index');
+2 提供接口
+在public目录下创建一个api.php ，里面的设置与同在public的index相同，访问localhost/api.php
+访问的是app/index/controller/Index.php下的方法，可同1一样改变api.php使得无法访问除了api以外的模块，
+另一种方法是在conf中配置'auto_bind_module' 为true，同时在app下创建模块api，则只能访问api模块
+
+
+路由
+1、实现路由首先需要在conf文件夹中的config.php中进行设置'url_route_must'         => false,
+'url_route_on'           => true，使得路由功能启动，然后在同级目录下创建一个route.php文件，在文件中
+例：
+<?php
+	return [
+		'new/:id' =>'index/index/info'
+	];
+?> 实现一个文件的路由转换,localhost/index/index/info/5 -->localhost/new/5
+其中app/index/index/info的实现函数是
+public function info($id)
+	{
+		echo url('index/index/info',['id'=>10])."<br>";
+		echo $id;
+	}
+
+
+
+
+
+
+
+
+
+
