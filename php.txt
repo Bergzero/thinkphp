@@ -28,7 +28,7 @@ app模块下的admin和index下的模块
 也可以在Index类中使用的函数中使用不同的配置，这就实现了类中的动态效果
 
 config类和config函数
-config类在thinkphp/library/think/config.php
+Config类在thinkphp/library/think/Config.php
 config函数在thinkphp/helper 一般建议写类
 use \think\Config;
 //获取配置
@@ -47,6 +47,9 @@ use \think\Config;
 环境变量的配置和使用
 use think\Env;
 Env::get('database_username','root');
+//$res = Env::get('gmail','default');
+//$res = Env::get('database.username');
+//$res = Env::get('database_username');
 通过在conf目录下的config.php中使用环境变量，通过环境变量的切换使得
 用户可以切换不同的配置，而只需要更改.env上的值。
 
@@ -56,7 +59,7 @@ thinkphp  单入口文件
 优势：安全检测 请求过滤
 
 thinkphp/public/index.php 入口文件
-入口文件常量定义 thinkphp\thnkphp\base.php
+入口文件常量定义 thinkphp\thinkphp\base.php
 如果入口文件没有定义，base.php中会有自动设置好的常量
 在php中框架引导文件中有安全过滤，可以在index中设置常量与引导文件
 
@@ -89,12 +92,637 @@ public function info($id)
 		echo $id;
 	}
 
+request
+请求对象获取
+三种方法
+//获取request对象
+//1  $request = request();
+/2   
+use think\Request
+$request = Request::instance();
+//3在函数的参数中初始化一个request对象，如Request $request
+
+
+请求对象参数获取
+//请求对象的获取 在浏览器中获取
+dump($request->domain());
+dump($request->pathinfo());
+dump($request->path());
+//请求类型
+dump($request->isGet());
+dump($request->method());
+dump($request->isPost());
+//请求参数
+dump($request->get());
+dump($request->param());
+dump($request->post());
+//session('name','berg')
+dump($request->session());
+//cookie('email','@.com');
+dump($request->cookie());
+dump($request->param('type'));
+
+//获取模块
+dump($request->module());
+dump($request->controller());
+dump($request->action());
+
+
+input函数
+在项目开发过程中，获取参数是十分重要的；tp框架为我们提供了input()助手函数来获取传递的各种参数；
+input()函数是tp框架中定义的，不是PHP内置函数；同时我们在使用tp框架开发项目的过程中，不应该再定义和input的同名的函数了，否则会和框架中的input()冲突；
+同时在入口文件中引用的其他文件中也不应该存在和input同名的自定义函数，否则也会和框架中的input()冲突；tp框架中的所有助手函数都是在thinkphp目录下的helper.php中定义
+
+input助手函数也是获取对象里面的参数. input('传递方式','参数','对参数过滤')
+注意获取请求的参数值，尽可能带上请求的方式，如：input(get.id) ，如果获取的值不存在
+（一般建议使用request）
+
+//dump($request->param());;
+//$res = input('post.id',100,'intval');
+//dump($request->post('id',100,'intval'));
+//dump($res);
+
+//session('email','2279137960@qq.com');
+//dump(input('session.email','imooc@email.com'));
+
+//cookie('aaa','123465');
+
+
+response 响应对象
+通过设置'default_return_type'的值进行response的设置
+Config::set('default_return_type','json');
+
+视图view
+直接通过return返回
+	#模块的地址默认是 app/index/view/index/index.html
+	#(upload)app/index/view/upload.html
+	#('public/upload') app/index/view/public/upload.html
+	#(./upload.html) 那么直接找到我们的入口文件的同级目录的模板文件 即app/public/目录下
+	 // return view('index',[
+	 // 	'user' =>123
+	 // ],['STATIC'=>1234]);
+通过use think\Controller
+使class Index extends Controller这个类
+然后通过return $this->fetch('upload')这种方式进行返回视图
+可以通过	return $this->fetch('index',[
+						'user'=>'aaa'
+					],[
+						'STATIC'=>'当前static的替换文件'
+					]);
+
+在html上为
+<body>
+	<p>"这是view"</p>
+	<p> {$user}</p>
+	<p>{$assign}</p>
+	<p>STATIC</p>
+</body>
 
 
 
 
+模板变量输出、赋值和替换
+变量输出： 
+runtime/temp/ 临时文件  先在html文件中定义变量｛$aa｝,然后在转化为编译文件
+convention.php 中template模块复制并在conf文件中设置 tpl_begin 和tpl_end
+
+变量赋值：
+1、$this->assign('assign','assign传递的值');
+
+2、use think\View;
+$this->view->key = 'value';
+			
+3、View::share('key2','value2');
+
+4、return $this->fetch('index','[
+	.........
+]')
+
+变量替换
+1、return $this->fetch('index','[]'，['STATIC' => 'ABA'])
+
+2、配置文件'view_replace_str' =[
+	'STATIC' => 'Agg'
+]
+
+3、	默认文件（进行简化更改的步骤）
+__STATIC__
+__URL__
+__JS__
+__CSS__
+__ROOT__
+可以在配置文件中进行动态使用
+thinkphp/library/View.php 可以看到
+
+
+thinkphp中类不用实例化就可以使用
+是静态调用方法，也可以说是单例模式：object::method(); 而用箭头的方法就是动态调用，需要实例化。
+为了避免重复new该对象，可节省内存,增加效率。
+
+
+系统变量原生标签
+	<p>{$Think.server.HTTP_HOST}</p>
+	<!--<p>{$Think.env.PHP_STATUS}</p>-->
+	<p>{$Think.session.email}</p>
+	<p>{$Think.cookie.name}</p>
+		
+
+	<p>{$Think.get.id}</p>
+	<p>{$Think.request.id}</p>
+	<p>{$Think.post.sid}</p>
+
+	<p>{$Think.const.APP_PATH}</p>
+	<p>{$Think.APP_PATH}</p>
+	localhost
+
+2279137960@qq.com
+
+berg
+
+5                                                           //localhost/?id = 5
+
+5
+
+D:\server\wamp64\www\thinkphp\public/../app/
+
+D:\server\wamp64\www\thinkphp\public/../app/
 
 
 
 
+变量输出调节器
+函数调用变量
+	<h2>{$email} : {$email|md5}</h2>
+	<h2>{$email} : {$email|substr =0,8}</h2>
+	<h2>{$email} : {$email|substr = ###,0,8}</h2>
+	<h2>{$time} : {$time|date="Y-m-d",###}</h2>
+	<h2>{$email} : {$email|md5} : {$email|md5|strtoupper}</h2>
+变量的加减乘除
+	<p>a+b = {$a+$b}</p>
+	<p>a-b = {$a-$b}</p>
+变量的保持不变
+	{literal}
+		{$email}
+	{/literal}
+view的注释
+	{/*这里是view的注释 */}
 
+
+
+模板循环标签
+
+{volist name = "list" id = "vo" offset = "0" length = "3" mod = "2" empty = "no data input" key = "s"}
+		<p>{$vo.name}</p>
+		<p>{$vo.email}</p>
+		<p>{$s}</p>
+{/volist}
+
+{volist  name="数组名"  id="数组的别名" key="默认为i，代表当前循环的次数"   offset="从索引的几开始往后输出"  length="当前所要输出的长度"  mod="循环的次数和mod取余"  empty="不能直接使用html标签，但是可以使用变量，当数组为空时显示的文本内容" }
+
+
+{foreach  $list  as  $vo} 或者  {foreach  name="list"  item="vo" "key" = " "}默认是$key
+
+{/foreach}
+
+{for  start="1"  end="10"  step="2"  name="k"}
+
+    <p>{$k}</p>
+
+{/for}
+
+相当于：
+
+for($k=1; $k<10; $i+=2){
+
+    echo "<p>{$k}</p>";
+
+}
+
+
+
+比较标签
+{eq  name="a"  value="10"}      equal
+	    <p>相等</p>
+	{else/}
+	    <p>不相等</p>
+	{/eq}
+
+	{neq name = "a" value ="8"} notequal
+		<p>不相等</p>
+	{else/}
+		<p>相等</p>
+	{/neq}
+gt 判断name值是否比value值大的
+lt判断name值是否比value值小的
+egt判断name值是否大于等于value值
+elt判断name值是否小雨等于value值
+(和变量比较的时候，value="$b",需加$)
+
+
+条件判断标签
+{switch name="'Think.get.level"}
+{case value="1|2"}<p>铜牌会员</p>{/case}   1和2可以共用 用|分割
+{case value="3"}<p>黄金会员</p>{/case}
+{case value="4"}<p>钻石会员</p>{/case}
+{default /} <p>游客</p>
+{/switch}
+
+{range name="Think.get.level" value="1,2,3" type="in"} //type为between时只可以有两个value
+<p>当前level是1, 2, 3中的一个</p>              //in notin between notbetween均有独立标签
+{else/}
+<p>当前level不是1, 2, 3中的任何一个</p>
+{/range}
+
+
+{defined name="变量/常量名"}//是否有定义
+{else/}
+{/defined}
+
+{if condition="($a == 1) and ($b == 1)"}  //可用 and or 
+{else/}
+{/if}
+
+
+
+模板布局、包含和继承
+https://www.imooc.com/video/14775/0
+1、
+{include file="common/nav" /}
+2、
+{extend name="common base" /}
+
+{block name="title"}
+	{__block__}
+{/block}
+3、
+conf中
+template模块中设置 
+ 'layout_on'  => true
+ 'layout_name' => 'layout'
+引用的是layout.html中的网页
+在view中common的html页面中使用{__CONTENT__}
+
+
+
+中级 数据模型
+数据库的连接操作
+1.可在config下的database.php返回配置信息，直接 Db::connect()(如果参数为空，那么会默认使用database.php中的配置连接)
+
+2.在方法里面引入 use think\Db;  Db::connect(array);数组即数据库连接配置 
+
+3.同样是Db::connect("mysql://root:password@127.0.0.1:3306:/databasename#utf8");                  //use think\Db 
+
+4.在配置文件中，添加一个数组，Db::connect("数组键名");  (config.php下的数组键名配置）
+
+
+
+数据的查询操作
+#使用sql语句方式查询数据库
+$res = Db::query("select *from imooc_user where id=?",[1]);
+$res =Db::execute("insert into imooc_user set username=?,password?,email=?",['imooc',md5('imooc'),'imooc@qq.com']);
+
+#selsect 返回所有记录 返回的结果是一个二维数组
+#如果结果不存在 返回一个空数组
+$res = Db::table('imooc_user')->select();
+
+#find 返回一条记录 返回的结果是一个一维数组
+#如果结果不存在返回NULL
+$res = Db::table('imooc_user')->find();
+
+#value  返回一条记录 并且是每条记录的某个字段值
+#如果结果不存在 返回NULL
+$res = Db::table('imooc_user')->value('username');
+
+#column 返回一个一维数组 数组中的value值就是我们要获取的列的值
+#如果存在第二个参数 就返回这个数组并且用第二个参数的值作为key值
+#如果不存在返回NULL
+$res = Db::table('imooc_user')->column('username');
+
+Db::name 也有同上的方法
+$res = Db::name('user')->select(); //可以使用配置文件中的前缀
+
+db 也有同上的方法
+如果没有第三个参数每次就都会实例化一个
+$res = db('user',[],false)->find();
+
+
+数据插入
+insert  返回值是影响记录的行数 插入数
+insertGetId  返回值插入数据的自增ID
+insertAll  返回插入数据成功的行数
+
+
+数据更新操作
+$db =Db::name('user');
+$res = $db->where(['id'=> 1])->update(['email' => '227913793002@qq.com']);
+$res = $db->where(['id'=> 2])->setField('email' ,'227913793002@qq.com');
+$res = $db->where(['id' => 1])->setInc('num',5);   num=num+5;
+$res = $db->where(['id' => 1])->setDec ('num');    num = num - 1;
+
+数据库删除操作
+$res = $db->where(['id' => ])->delete();
+相当于 $res = $db ->delete('2');			如果有主键的话，就是主键
+$res = $db->where("1=1")->delete();		删除所有
+
+
+条件构造器
+EQ、=       	等于（=） 
+NEQ、<>  	不等于（<>） 
+GT、>       	大于（>） 
+EGT、>=   	大于等于（>=） 
+LT、<                   	小于（<） 
+ELT、<=               	小于等于（<=） 
+LIKE                     	模糊查询 
+[NOT] BETWEEN 	(不在)区间查询 
+[NOT] IN            	(不在)IN 查询( 'id','in' ,'1,5,8'( [1,5,8] ) )
+[NOT] NULL 	查询字段是否（不）是NULL 
+[NOT] EXISTS 	EXISTS查询 
+$sql = $db ->where("id","in","1,2,3")->whereOr("username","1877785")->where("num","lt","10")->buildSql();
+
+$sql = $db->where(['id'=>['in',[1,2,3]]])->buildSql();
+
+
+
+链式操作
+$res = Db:table('imooc_user')
+->where("id",">","group")
+->order("id DESC")
+->limit(3,5)
+->group("`group`")->select();
+
+
+
+
+MVC中的M模型
+模型定义 
+在app/index/下建立一个model文件
+命名为 imooc_user  -> User.php
+	  imooc_user_info ->UserInfo.php
+<?php
+	namespace app\index\model;
+	use think\Model;
+	class User extends Model
+	{	
+	}
+?>
+与表名相对应
+
+1、use app\index\model\User
+$res = User::get(1)
+$res = $res->toArray();
+
+2、$user = new User();
+$res = $user::get(1);
+
+3、use think\Loader;
+$user = Loader::model("User");
+$res = $user::get(1); //适用于比较多的model
+
+4、$user = model("User");
+$res = $user::get(1);
+
+
+使用模型查询对象
+1、
+use app\index\model\User
+$res = User::get(1)
+dump($res->username)
+2、$res = $res->toArray();
+3、
+$res = User::get(function($query){
+		$query->where('id','eq',1);
+});
+
+$res = $res->toArray();
+4、
+$res = User::where('id','8')->field('username','password')->find();
+
+5、
+//$res = User::all([1,2,3]);
+//$res = User::all("1,2,3");
+$res = User::all(function($query)
+	{$query->where("id","<","5")->field('id', 'email');
+});
+
+foreach($res as $val)
+{
+	$val = $val->toArray();
+	dump($val);
+}
+6、
+$res = User::where("id","<","8")->field("username","password")->select();
+
+7、
+$res =User::column("email","username");		
+dump($res);
+
+添加数据
+1、
+$res = User::create([
+	'username' =>'imooc',
+	'password' => md5('imooc'),
+	'email'    => 'imooc@qq.com',
+	'num'   =>100
+],['password','username']);//第二个参数也可以为true，排除不存在的字段
+['password','username']限制添加字段
+2、
+$usermodel = new User;
+$res = $usermodel->allowField('[username,password]')->save([
+	'username' =>'imooc',
+	'password' => md5('imooc'),
+	'email'    => 'imooc@qq.com',
+	'num'   =>100
+]);
+3、$res = $userModer->saveALl([]);
+ for($k= 1;$k<10;$k++)
+			 {
+			 	$data[] =[
+			 		'id' =>"{$k}",
+					'username' => "berg{$k}",
+					'password' =>  "{$k}",
+					'email'  =>"berg{$k}@qq.com",
+					'num'  => "{$k}"
+				];
+			 }
+$usermodel = new User();
+$res = $usermodel->saveAll($data);	
+
+
+
+使用模型更新数据
+1、需要判断有没有改变，不用这个
+$res = User::update([
+					'id' =>1,
+					'username' => '177722258'
+				]);
+2、不用这个，没返回
+$res = User::update([
+					'username' => '177722258'
+				],function($query){
+					$query->where("id","ELT",3);
+
+				});
+3 第二次更新会返回0，第一次返回1
+$res = User::where("id",">","8")->
+			update(['username' => '123']);
+
+4 把第一行的记录更改
+$usermodel = User::get(1);
+$usermodel->username ='123';
+$usermodel->email = '123@qq.com';
+$res =$usermodel->save();
+
+
+5
+$userModel = new User;
+
+$res =$userModel->save([
+	'email' => '123564@qq.com'
+],['id' => 6]);	同样可以传递一个闭包函数
+
+6、不用这个，没返回
+$res = $userModel->saveAll(
+	[   ['id'=>1,'username'=>'2'],
+		['id'=>2,'username'=>'2']
+	]
+)
+
+
+使用模型删除数据
+1、
+$res = User::destroy(function($quenry)
+{
+	$quenry->where("id",">","9");
+});
+2、
+$res = User::where('id','>','7')->delete();
+删除全部
+$res = User::where('1=1')->delete();
+3、
+$userModel = User::get(7);
+$res = $userModel->delete();
+
+
+模型聚合操作
+1、$res = User::count();
+$res = User::where('id','<',''3)
+->count();
+2、
+$res = User::max('num')
+$res = User::where('id','<',''3)
+->max('num');
+
+3
+$res = User::sum('num')
+$res = User::where('id','<',''3)
+->sum('num');
+
+4
+$res = User::avg('num')
+$res = User::where('id','<',''3)
+->avg('num');
+
+5
+$res = User::min('num')
+$res = User::where('id','<',''3)
+->min('num');
+
+
+模型获取器
+1 在table中新建一个字段 sex
+然后在index.php中使用User::get(1)获取其中一个记录
+并用 echo发送
+在User.php中继承Model的类中使用函数
+getSexAttr($val)获取性别的参数，并进行判断return 
+可以在浏览器窗口看到return返回的值
+
+在index.php用dump发布，
+可以直接获取返回的值
+dump($res->sex);			
+dump($res->toarray());
+不可以直接获取返回的值
+dump($res->getdata());
+
+
+
+模型修改器与自动完成
+模型修改器
+对数据表进行修改
+$res = User::create(
+	[
+		'password' => 'imooc',
+		'username' => 'aaaa',
+		'sex' =>0,
+		'num' => 1,
+		'email' => 'bbbb@aa.com'
+	]
+);
+dump($res);
+在User.php 
+public function setPasswordAttr($val,$data)
+	{
+		return md5($val);
+	}
+可以实现模型修改器
+
+自动完成
+在User.php中添加
+protected $auto = [
+	'time'  //修改，更新时自动添加
+];
+protected $insert = [
+	'time_insert' //修改时自动添加
+];
+protected $update = [
+	'time_update'//更新时自动添加
+];
+public function setTimeAttr()
+{
+	return time();
+}
+public function setTimeInsertAttr()
+{
+	return time();
+}
+public function setTimeUpdateAttr()
+{
+	return time();
+}
+同时在数据表中要有相对应的time 、time_insert、time_update字段
+
+
+时间戳 和软删除
+1一般不建议
+'配置conf文件中的auto_timestamp' => 'ture'
+自动添加时间戳
+.2
+User.php
+<?php
+	namespace app\index\model;
+
+	use think\Model;
+	use traits\model\SoftDelete;
+
+	class User extends Model
+	{
+		use SoftDelete;//软删除使用
+		protected $autoWriteTimestamp = true; //更改字段名以便更改时间戳  
+		protected $createTime = false;     //默认字段名  update_time
+		protected $updateTime = 'time_update';  //默认字段名 create_time 
+		protected $deleteTime = 'time_delete';	//更改字段名以便实现软删除  delete_time
+	} 
+?>
+
+index.php中的
+$res = User::destroy(2);可以实现软删除
+
+$res = User::destroy(2，true);   //都加true后，实现真正删除
+$user = User::get(2);
+$res = $user->delete(true);
+
+$res = User::get(2)//软删除之后获取不到
+$res = User::withTrashed(true)->find(2);  //实现了获取 软删除之后
+$res = User::onlyTrashed()->select();
+foreach ($res as $val) {   
+		 	dump($val->getData());
+	 }
